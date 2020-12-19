@@ -79,74 +79,72 @@ function addItem() {
         message: "What is the name of the new department?",
       })
       .then(function (answer) {
-        var query = `INSERT INTO department ( deptName)
+        var query = `INSERT INTO department (deptName)
           VALUES ("${answer.name}");`;
         connection.query(query, function (err, res) {
           if (err) throw err;
-          console.log(res);
         });
         connection.query(`SELECT * FROM department`, function (err, res) {
           if (err) throw err;
           console.table(res);
+          console.log("\nDepartment Added!");
           userAction();
         });
       });
   }
 
   function addRole() {
-    const qd = queryDepartments();
-    console.log(qd);
-    inquirer
-      .prompt([
-        {
-          name: "title",
-          type: "input",
-          message: "What is the title of the new role?",
-        },
-        {
-          name: "salary",
-          type: "input",
-          message: "What is the salary amount for the new role?",
-          validate: (salary) => {
-            if (isNaN(salary) === false) {
-              return true;
-            }
-            return "Please enter a valid number.";
+    connection.query(`SELECT deptName FROM department `, (err, res) => {
+      if (err) throw err;
+      const depts = res.map((nombre) => nombre.deptName);
+      inquirer
+        .prompt([
+          {
+            name: "title",
+            type: "input",
+            message: "What is the title of the new role?",
           },
-        },
-        {
-          name: "dept",
-          type: "list",
-          message: "Choose department this role will be assigned to:",
-          choices: qd,
-        },
-      ])
-      .then(function (answer) {
-        var query = `INSERT INTO role (title, salary, department_id)
-          VALUES ("${answer.title}", "${answer.salary}", "${answer.dept}");`;
-        connection.query(query, function (err, res) {
-          if (err) throw err;
-          console.log(res);
+          {
+            name: "salary",
+            type: "input",
+            message: "What is the salary amount for the new role?",
+            validate: (salary) => {
+              if (isNaN(salary) === false) {
+                return true;
+              }
+              return "Please enter a valid number.";
+            },
+          },
+          {
+            name: "dept",
+            type: "list",
+            message: "Choose department this role will be assigned to:",
+            choices: depts,
+          },
+        ])
+        .then(function (answer) {
+          connection.query(
+            `SELECT id FROM department WHERE deptName = "${answer.dept}"`,
+            function (err, res) {
+              if (err) throw err;
+              let id = res.map((nombre) => nombre.id);
+              var query = `INSERT INTO role (title, salary, department_id)
+                          VALUES ("${answer.title}", "${answer.salary}", "${id}");`;
+              connection.query(query, function (err, res) {
+                if (err) throw err;
+              });
+            }
+          );
+          connection.query(`SELECT * FROM role`, function (err, res) {
+            if (err) throw err;
+            userAction();
+          });
         });
-        connection.query(`SELECT * FROM role`, function (err, res) {
-          if (err) throw err;
-          console.table(res);
-          userAction();
-        });
-      });
+    });
   }
 
   function addEmployee() {
     console.log("addEmployee");
-  }
-
-  function queryDepartments() {
-    connection.query(`SELECT deptName FROM department `, (err, res) => {
-      if (err) throw err;
-      const depts = res.map((nombre) => nombre.deptName);
-
-      return depts;
-    });
   }
 }
 
@@ -192,6 +190,7 @@ function viewItem() {
     connection.query(`SELECT * FROM department `, (err, res) => {
       if (err) throw err;
       console.table(res);
+      viewItem();
     });
   }
 
@@ -199,6 +198,7 @@ function viewItem() {
     connection.query(`SELECT * FROM role `, (err, res) => {
       if (err) throw err;
       console.table(res);
+      viewItem();
     });
   }
 
@@ -206,21 +206,47 @@ function viewItem() {
     connection.query(`SELECT * FROM employee `, (err, res) => {
       if (err) throw err;
       console.table(res);
+      viewItem();
     });
   }
 
   function viewEmpByManager(manager) {
-    connection.query(
-      `SELECT * FROM employee WHERE manager_id = ${manager} `,
-      (err, res) => {
-        if (err) throw err;
-        console.table(res);
-      }
-    );
+    connection.query(`SELECT * FROM employee `, (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      viewItem();
+
+      inquirer.prompt([
+        {
+          name: "action",
+          type: "rawlist",
+          message: "Which manager?",
+          choices: "",
+        },
+      ]);
+      console.log("Needs Inquirer!");
+      // connection.query(
+      //   `SELECT * FROM employee WHERE manager_id = ${manager} `,
+      //   (err, res) => {
+      //     if (err) throw err;
+      //     console.table(res);
+      //     viewItem();
+      //   }
+      // );
+    });
   }
 
   function viewSalaryBudget() {
-    console.log("viewSalaryBudget");
+    connection.query(
+      `SELECT SUM(salary) AS totalBudget FROM role;`,
+      (err, res) => {
+        if (err) throw err;
+
+        console.log(res[0].totalBudget);
+
+        viewItem();
+      }
+    );
   }
 }
 
@@ -245,7 +271,64 @@ function updateItem() {
     });
 
   function updRole() {
-    console.log("updRole");
+    connection.query(`SELECT * FROM role`, (err, res) => {
+      if (err) throw err;
+      console.table(res);
+    });
+    connection.query(`SELECT id, deptName FROM department`, (err, res) => {
+      if (err) throw err;
+      const depts = res.map((nombre) => nombre.deptName);
+      inquirer
+        .prompt([
+          {
+            name: "title",
+            type: "input",
+            message: "Please enter the Id for the role:",
+            validate: (title) => {
+              if (isNaN(title) === false) {
+                return true;
+              }
+              return "Please enter a valid number.";
+            },
+          },
+          {
+            name: "salary",
+            type: "input",
+            message: "What is the salary amount for the role?",
+            validate: (salary) => {
+              if (isNaN(salary) === false) {
+                return true;
+              }
+              return "Please enter a valid number.";
+            },
+          },
+          {
+            name: "dept",
+            type: "list",
+            message: "Choose department this role will be assigned to:",
+            choices: depts,
+          },
+        ])
+        .then(function (answer) {
+          connection.query(
+            `SELECT id FROM department WHERE deptName = "${answer.dept}"`,
+            function (err, res) {
+              if (err) throw err;
+              let id = res.map((nombre) => nombre.id);
+              var query = `UPDATE role SET salary = ${answer.salary}, department_id = ${id}
+                          WHERE id = ${answer.title};`;
+              connection.query(query, function (err, res) {
+                if (err) throw err;
+                console.log("\nUpdate Made!");
+              });
+            }
+          );
+          connection.query(`SELECT * FROM role`, function (err, res) {
+            if (err) throw err;
+            userAction();
+          });
+        });
+    });
   }
 
   function updManager() {
