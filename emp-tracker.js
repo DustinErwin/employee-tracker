@@ -129,7 +129,7 @@ function addItem() {
               if (err) throw err;
               let id = res.map((nombre) => nombre.id);
               var query = `INSERT INTO role (title, salary, department_id)
-                          VALUES ("${answer.title}", "${answer.salary}", "${id}");`;
+                          VALUES ("${answer.title}", "${answer.salary}", ${id});`;
               connection.query(query, function (err, res) {
                 if (err) throw err;
               });
@@ -137,6 +137,8 @@ function addItem() {
           );
           connection.query(`SELECT * FROM role`, function (err, res) {
             if (err) throw err;
+            console.table(res);
+            console.log("\nRole Added!");
             userAction();
           });
         });
@@ -144,7 +146,64 @@ function addItem() {
   }
 
   function addEmployee() {
-    console.log("addEmployee");
+    connection.query(`SELECT title FROM role `, (err, res) => {
+      if (err) throw err;
+      const roles = res.map((nombre) => nombre.title);
+      connection.query(`SELECT * FROM employee `, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        inquirer
+          .prompt([
+            {
+              name: "first",
+              type: "input",
+              message: "First Name:",
+            },
+            {
+              name: "last",
+              type: "input",
+              message: "Last Name:",
+            },
+            {
+              name: "role",
+              type: "list",
+              message: "What is the employee's role?",
+              choices: roles,
+            },
+            {
+              name: "manager",
+              type: "input",
+              message: "What is this employee's manager's Id?",
+              validate: (salary) => {
+                if (isNaN(salary) === false) {
+                  return true;
+                }
+                return "Please enter a valid number.";
+              },
+            },
+          ])
+          .then(function (answer) {
+            connection.query(
+              `SELECT id FROM role WHERE title = "${answer.role}"`,
+              function (err, res) {
+                if (err) throw err;
+                let id = res.map((nombre) => nombre.id);
+                var query = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                          VALUES ("${answer.first}", "${answer.last}", ${id}, ${answer.manager});`;
+                connection.query(query, function (err, res) {
+                  if (err) throw err;
+                });
+              }
+            );
+            connection.query(`SELECT * FROM employee`, function (err, res) {
+              if (err) throw err;
+              console.table(res);
+              console.log("\nEmployee Added!");
+              userAction();
+            });
+          });
+      });
+    });
   }
 }
 
@@ -275,7 +334,7 @@ function updateItem() {
       if (err) throw err;
       console.table(res);
     });
-    connection.query(`SELECT id, deptName FROM department`, (err, res) => {
+    connection.query(`SELECT deptName FROM department`, (err, res) => {
       if (err) throw err;
       const depts = res.map((nombre) => nombre.deptName);
       inquirer
@@ -361,11 +420,70 @@ function deleteItem() {
     });
 
   function delDept() {
+    connection.query(`SELECT deptName FROM department`, (err, res) => {
+      if (err) throw err;
+      const depts = res.map((nombre) => nombre.deptName);
+      inquirer
+        .prompt([
+          {
+            name: "dept",
+            type: "list",
+            message: "Choose department to be removed:",
+            choices: depts,
+          },
+        ])
+        .then(function (answer) {
+          connection.query(
+            `SELECT id FROM department WHERE deptName = "${answer.dept}"`,
+            function (err, res) {
+              if (err) throw err;
+
+              id = res.map((nombre) => nombre.id);
+
+              var query = `DELETE FROM department
+                          WHERE id = ${id}`;
+              connection.query(query, function (err, res) {
+                if (err) throw err;
+                console.log("\nDepartment Deleted!");
+                userAction();
+              });
+            }
+          );
+        });
+    });
     console.log("delDept");
   }
 
   function delRole() {
-    console.log("delRole");
+    connection.query(`SELECT title FROM role`, (err, res) => {
+      if (err) throw err;
+      const roles = res.map((nombre) => nombre.title);
+      inquirer
+        .prompt([
+          {
+            name: "role",
+            type: "list",
+            message: "Choose role to be removed:",
+            choices: roles,
+          },
+        ])
+        .then(function (answer) {
+          connection.query(
+            `SELECT id FROM role WHERE title = "${answer.role}"`,
+            function (err, res) {
+              if (err) throw err;
+              let id = res.map((nombre) => nombre.id);
+              var query = `DELETE FROM role
+                          WHERE id = ${id}`;
+              connection.query(query, function (err, res) {
+                if (err) throw err;
+                console.log("\nRole Deleted!");
+                userAction();
+              });
+            }
+          );
+        });
+    });
   }
 
   function delEmployee() {
