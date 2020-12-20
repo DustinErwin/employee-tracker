@@ -1,22 +1,23 @@
-const mysql = require("mysql");
-const inquirer = require("inquirer");
-
-const connection = mysql.createConnection({
-  host: "localhost",
-
-  port: 3306,
-
-  user: "root",
-
-  password: "rootroot",
-  database: "employeeDB",
-});
-
-connection.connect(function (err) {
-  if (err) throw err;
-});
-
 module.exports = function updRole() {
+  const mysql = require("mysql");
+  const inquirer = require("inquirer");
+  const main = require("../main");
+
+  const connection = mysql.createConnection({
+    host: "localhost",
+
+    port: 3306,
+
+    user: "root",
+
+    password: "rootroot",
+    database: "employeeDB",
+  });
+
+  connection.connect(function (err) {
+    if (err) throw err;
+  });
+
   connection.query(`SELECT * FROM role`, (err, res) => {
     if (err) throw err;
     console.table(res);
@@ -72,7 +73,7 @@ module.exports = function updRole() {
           if (err) throw err;
           console.table(res);
           console.log("\nRole Updated!");
-          userAction();
+          main();
         });
       });
   });

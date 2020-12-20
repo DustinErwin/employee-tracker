@@ -1,22 +1,23 @@
-const mysql = require("mysql");
-const inquirer = require("inquirer");
-
-const connection = mysql.createConnection({
-  host: "localhost",
-
-  port: 3306,
-
-  user: "root",
-
-  password: "rootroot",
-  database: "employeeDB",
-});
-
-connection.connect(function (err) {
-  if (err) throw err;
-});
-
 module.exports = function deleteItem() {
+  const mysql = require("mysql");
+  const inquirer = require("inquirer");
+  const main = require("../main");
+
+  const connection = mysql.createConnection({
+    host: "localhost",
+
+    port: 3306,
+
+    user: "root",
+
+    password: "rootroot",
+    database: "employeeDB",
+  });
+
+  connection.connect(function (err) {
+    if (err) throw err;
+  });
+
   inquirer
     .prompt({
       name: "action",
@@ -59,20 +60,20 @@ module.exports = function deleteItem() {
             function (err, res) {
               if (err) throw err;
 
-              id = res.map((nombre) => nombre.id);
+              id = res[0].id;
 
               var query = `DELETE FROM department
                             WHERE id = ${id}`;
               connection.query(query, function (err, res) {
                 if (err) throw err;
                 console.log("\nDepartment Deleted!");
-                userAction();
+                main();
               });
               connection.query(`SELECT * FROM department`, function (err, res) {
                 if (err) throw err;
                 console.table(res);
                 console.log("\nDepartment Deleted!");
-                userAction();
+                main();
               });
             }
           );
@@ -99,7 +100,7 @@ module.exports = function deleteItem() {
             `SELECT id FROM role WHERE title = "${answer.role}"`,
             function (err, res) {
               if (err) throw err;
-              let id = res.map((nombre) => nombre.id);
+              let id = res[0].id;
               var query = `DELETE FROM role
                             WHERE id = ${id}`;
               connection.query(query, function (err, res) {
@@ -109,7 +110,7 @@ module.exports = function deleteItem() {
                 if (err) throw err;
                 console.table(res);
                 console.log("\nRole Deleted!");
-                userAction();
+                main();
               });
             }
           );
@@ -146,7 +147,7 @@ module.exports = function deleteItem() {
             if (err) throw err;
             console.table(res);
             console.log("\nEmployee Deleted!");
-            userAction();
+            main();
           });
         });
     });

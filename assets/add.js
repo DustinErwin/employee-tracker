@@ -1,22 +1,23 @@
-const mysql = require("mysql");
-const inquirer = require("inquirer");
-
-const connection = mysql.createConnection({
-  host: "localhost",
-
-  port: 3306,
-
-  user: "root",
-
-  password: "rootroot",
-  database: "employeeDB",
-});
-
-connection.connect(function (err) {
-  if (err) throw err;
-});
-
 module.exports = function addItem() {
+  const mysql = require("mysql");
+  const inquirer = require("inquirer");
+  const main = require("../main");
+
+  const connection = mysql.createConnection({
+    host: "localhost",
+
+    port: 3306,
+
+    user: "root",
+
+    password: "rootroot",
+    database: "employeeDB",
+  });
+
+  connection.connect(function (err) {
+    if (err) throw err;
+  });
+
   inquirer
     .prompt({
       name: "action",
@@ -57,7 +58,7 @@ module.exports = function addItem() {
           if (err) throw err;
           console.table(res);
           console.log("\nDepartment Added!");
-          userAction();
+          main();
         });
       });
   }
@@ -108,7 +109,7 @@ module.exports = function addItem() {
             if (err) throw err;
             console.table(res);
             console.log("\nRole Added!");
-            userAction();
+            main();
           });
         });
     });
@@ -168,7 +169,7 @@ module.exports = function addItem() {
               if (err) throw err;
               console.table(res);
               console.log("\nEmployee Added!");
-              userAction();
+              main();
             });
           });
       });
