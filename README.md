@@ -8,15 +8,6 @@
 
 A node based CLI designed to organize employees, salaries, roles, and departments.
 
-## Table of Contents
-
-- [Description](#description)
-- [Installation](#installation)
-- [License](#license)
-- [Contributors](#contributors)
-- [Tests](#tests)
-- [Questions?](#questions)
-
 ## Installation
 
 [Watch the video!](https://drive.google.com/file/d/1WStMu_wdDZVVrNM3JUjIglaXMQBl9j8z/view)
